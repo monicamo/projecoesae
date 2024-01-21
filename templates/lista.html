@@ -6,15 +6,17 @@
                 <th>Nome</th>
                 <th>Categoria</th>
                 <th>Console</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-        {% for jogo in jogos %}
-                        <tr>
-                            <td>{{ jogo.nome }}</td>
-                            <td>{{ jogo.categoria }}</td>
-                            <td>{{ jogo.console }}</td>
-                        </tr>
+        {% for planilha in planilhas %}
+        <tr>
+            <td>{{ planilha.nome }}</td>
+            <td>{{ planilha.categoria }}</td>
+            <td>{{ planilha.console }}</td>
+            <td><a href="{{ url_for('editar', id=planilha.id) }}">Editar</a></td>
+        </tr>
         {% endfor %}
         </tbody>
     </table>
