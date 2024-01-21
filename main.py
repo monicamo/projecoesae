@@ -1,36 +1,44 @@
 from flask import Flask, render_template, request, redirect, session, flash, url_for
-
-class Jogo:
-    def __init__(self, nome, categoria, console):
-        self.nome = nome
-        self.categoria = categoria
-        self.console = console
-
-jogo1 = Jogo('Tetris', 'Puzzle', 'Atari')
-jogo2 = Jogo('God of War', 'Hack n Slash', 'PS2')
-jogo3 = Jogo('Mortal Kombat', 'Luta', 'PS2')
-lista = [jogo1, jogo2, jogo3]
-
-class Usuario:
-    def __init__(self, nome, nickname, senha):
-        self.nome = nome
-        self.nickname = nickname
-        self.senha = senha
-
-usuario1 = Usuario("Bruno Divino", "BD", "alohomora")
-usuario2 = Usuario("Camila Ferreira", "Mila", "paozinho")
-usuario3 = Usuario("Guilherme Louro", "Cake", "Python_eh_vida")
-
-usuarios = { usuario1.nickname : usuario1,
-             usuario2.nickname : usuario2,
-             usuario3.nickname : usuario3 }
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.secret_key = 'alura'
 
+app.config['SQLALCHEMY_DATABASE_URI'] = \
+    '{SGBD}://{usuario}:{senha}@{servidor}/{database}'.format(
+        SGBD = 'mysql+mysqlconnector',
+        usuario = 'root',
+        senha = 'biju',
+        servidor = 'localhost',
+        database = 'planilhateca'
+    )
+
+
+db = SQLAlchemy(app)
+
+class Planilhas(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(50), nullable=False)
+    categoria = db.Column(db.String(40), nullable=False)
+    console = db.Column(db.String(20), nullable=False)
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+class Usuarios(db.Model):
+    nickname = db.Column(db.String(8), primary_key=True)
+    nome = db.Column(db.String(20), nullable=False)
+    senha = db.Column(db.String(100), nullable=False)
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+
 @app.route('/')
 def index():
-    return render_template('lista.html', titulo='Jogos', jogos=lista)
+    lista = Planilhas.query.order_by(Planilhas.id)
+    return render_template('lista.html', titulo='Planilhas', jogos=lista)
+
 
 @app.route('/novo')
 def novo():
@@ -38,24 +46,36 @@ def novo():
         return redirect(url_for('login', proxima=url_for('novo')))
     return render_template('novo.html', titulo='Novo Jogo')
 
+
 @app.route('/criar', methods=['POST',])
 def criar():
-    nome = request. form['nome']
-    categoria = request. form['categoria']
-    console = request. form['console']
-    jogo = Jogo(nome, categoria, console)
-    lista.append(jogo)
+    nome = request.form['nome']
+    categoria = request.form['categoria']
+    console = request.form['console']
+
+    planilha = Planilhas.query.filter_by(nome=nome).first()
+
+    if planilha:
+        flash('Jogo já existente!')
+        return redirect(url_for('index'))
+
+    novo_planilha = Planilhas(nome=nome, categoria=categoria, console=console)
+    db.session.add(novo_planilha)
+    db.session.commit()
+
     return redirect(url_for('index'))
+
 
 @app.route('/login')
 def login():
     proxima = request.args.get('proxima')
     return render_template('login.html', proxima=proxima)
 
-@app.route('/autenticar', methods=['POST', ])
+
+@app.route('/autenticar', methods=['POST',])
 def autenticar():
-    if request.form['usuario'] in usuarios:
-        usuario = usuarios[request.form['usuario']]
+    usuario = Usuarios.query.filter_by(nickname=request.form['usuario']).first()
+    if usuario:
         if request.form['senha'] == usuario.senha:
             session['usuario_logado'] = usuario.nickname
             flash(usuario.nickname + ' logado com sucesso!')
@@ -65,10 +85,12 @@ def autenticar():
         flash('Usuário não logado.')
         return redirect(url_for('login'))
 
+
 @app.route('/logout')
 def logout():
     session['usuario_logado'] = None
     flash('Logout efetuado com sucesso!')
     return redirect(url_for('index'))
+
 
 app.run(debug=True)
