@@ -7,6 +7,7 @@
                 <th>Categoria</th>
                 <th>Console</th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -16,6 +17,7 @@
             <td>{{ planilha.categoria }}</td>
             <td>{{ planilha.console }}</td>
             <td><a href="{{ url_for('editar', id=planilha.id) }}">Editar</a></td>
+            <td><a href="{{ url_for('deletar', id=planilha.id) }}">Deletar</a></td>
         </tr>
         {% endfor %}
         </tbody>
