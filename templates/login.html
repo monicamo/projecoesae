@@ -8,7 +8,6 @@
   </head>
   <body>
     <div class="container">
-
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <ul id="messages" class="list-unstyled">
@@ -19,10 +18,12 @@
             {% endif %}
         {% endwith %}
 
-        <div class="page-header">
-            <h1>{{ titulo }}</h1>
-        </div>
-        {% block conteudo %}{% endblock %}
+        <h1>Faça seu login</h1>
+        <form method="POST" action="/autenticar">
+            <p><label>Nome de usuário:</label> <input class="form-control" type="text" name="usuario" required></p>
+            <p><label>Senha:</label> <input class="form-control" type="password" name="senha" required></p>
+            <p><button class="btn btn-primary" type="submit">Entrar</button></p>
+        </form>
     </div>
 </body>
 </html>
