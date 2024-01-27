@@ -36,7 +36,8 @@ def criar():
 
     arquivo = request.files['arquivo']
     upload_path = app.config['UPLOAD_PATH']
-    arquivo.save(f'{upload_path}/capa_{novo_planilha.id}.jpg')
+    timestamp = time.time()
+    arquivo.save(f'{upload_path}/capa_{novo_planilha.id}_{timestamp}.jpg')
 
     return redirect(url_for('index'))
 
@@ -63,14 +64,17 @@ def atualizar():
 
     arquivo = request.files['arquivo']
     upload_path = app.config['UPLOAD_PATH']
-    arquivo.save(f'{upload_path}/capa_{planilha.id}.jpg')
+    timestamp = time.time()
+
+    deleta_arquivo(planilha.id)
+    arquivo.save(f'{upload_path}/capa_{planilha.id}_{timestamp}.jpg')
 
     return redirect(url_for('index'))
 
 
 @app.route('/deletar/<int:id>')
 def deletar(id):
-    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+    if 'usuario_logado' not in session or session['usuario_logado'] is None:
         return redirect(url_for('login'))
 
     Planilhas.query.filter_by(id=id).delete()
