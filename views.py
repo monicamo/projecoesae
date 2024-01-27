@@ -1,6 +1,8 @@
 from flask import render_template, request, redirect, session, flash, url_for, send_from_directory
 from main import app, db
 from models import Planilhas, Usuarios
+from helpers import recupera_imagem, deleta_arquivo
+import time
 
 
 @app.route('/')
@@ -41,12 +43,12 @@ def criar():
 
 @app.route('/editar/<int:id>')
 def editar(id):
-    if 'usuario_logado' not in session or session['usuario_logado'] == None:
-        return redirect(url_for('login', proxima=url_for('editar')))
+    if 'usuario_logado' not in session or session['usuario_logado'] is None:
+        return redirect(url_for('login', proxima=url_for('editar', id=id)))
 
     planilha = Planilhas.query.filter_by(id=id).first()
-
-    return render_template('editar.html', titulo='Editando Planilha', planilha=planilha)
+    capa_planilha = recupera_imagem(id)
+    return render_template('editar.html', titulo='Editando Planilha', planilha=planilha, capa_planilha=capa_planilha)
 
 
 @app.route('/atualizar', methods=['POST',])
@@ -58,6 +60,10 @@ def atualizar():
 
     db.session.add(planilha)
     db.session.commit()
+
+    arquivo = request.files['arquivo']
+    upload_path = app.config['UPLOAD_PATH']
+    arquivo.save(f'{upload_path}/capa_{planilha.id}.jpg')
 
     return redirect(url_for('index'))
 
