@@ -9,7 +9,8 @@ db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 
 
-from views import *
+from views_planilha import *
+from views_user import *
 
 
 if __name__ == '__main__':
