@@ -1,7 +1,7 @@
 import os
 from main import app
 from flask_wtf import FlaskForm
-from wtforms import StringField, validators, SubmitField
+from wtforms import StringField, validators, SubmitField, PasswordField
 
 
 class FormularioPlanilha(FlaskForm):
@@ -9,6 +9,12 @@ class FormularioPlanilha(FlaskForm):
     categoria = StringField('Categoria', [validators.DataRequired(), validators.Length(min=1, max=40)])
     console = StringField('Console', [validators.DataRequired(), validators.Length(min=1, max=20)])
     salvar = SubmitField('Salvar')
+
+
+class FormularioUsuario(FlaskForm):
+    nickname = StringField('Apelido do usuario', [validators.DataRequired(), validators.Length(min=1, max=8)])
+    senha = PasswordField('Senha', [validators.DataRequired(), validators.Length(min=1, max=100)])
+    login = SubmitField('Login')
 
 
 def recupera_imagem(id):

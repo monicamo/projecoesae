@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, session, flash, url_for, send_from_directory
 from main import app, db
 from models import Planilhas, Usuarios
-from helpers import recupera_imagem, deleta_arquivo, FormularioPlanilha
+from helpers import recupera_imagem, deleta_arquivo, FormularioPlanilha, FormularioUsuario
 import time
 
 
@@ -101,14 +101,16 @@ def deletar(id):
 @app.route('/login')
 def login():
     proxima = request.args.get('proxima')
-    return render_template('login.html', proxima=proxima)
+    form = FormularioUsuario()
+    return render_template('login.html', proxima=proxima, form=form)
 
 
 @app.route('/autenticar', methods=['POST',])
 def autenticar():
-    usuario = Usuarios.query.filter_by(nickname=request.form['usuario']).first()
+    form = FormularioUsuario(request.form)
+    usuario = Usuarios.query.filter_by(nickname=form.nickname.data).first()
     if usuario:
-        if request.form['senha'] == usuario.senha:
+        if form.senha.data == usuario.senha:
             session['usuario_logado'] = usuario.nickname
             flash(usuario.nickname + ' logado com sucesso!')
             proxima_pagina = request.form['proxima']
