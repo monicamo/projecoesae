@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, session, flash, url_for
 from helpers import FormularioUsuario
 from main import app
 from models import Usuarios
+from bcrypt import checkpw
 
 @app.route('/login')
 def login():
@@ -13,16 +14,19 @@ def login():
 @app.route('/autenticar', methods=['POST',])
 def autenticar():
     form = FormularioUsuario(request.form)
-    usuario = Usuarios.query.filter_by(nickname=form.nickname.data).first()
-    if usuario:
-        if form.senha.data == usuario.senha:
+
+    if form.validate():  # Verifica se o formulário é válido
+        usuario = Usuarios.query.filter_by(nickname=form.nickname.data).first()
+        senha_armazenada = usuario.senha.encode('utf-8')
+        senha = checkpw(form.senha.data.encode('utf-8'), senha_armazenada)
+        if usuario and senha:
             session['usuario_logado'] = usuario.nickname
             flash(usuario.nickname + ' logado com sucesso!')
-            proxima_pagina = request.form['proxima']
+            proxima_pagina = request.form.get('proxima', url_for('index'))
             return redirect(proxima_pagina)
-    else:
-        flash('Usuário não logado.')
-        return redirect(url_for('login'))
+
+    flash('Usuário não logado.')
+    return redirect(url_for('login'))
 
 
 @app.route('/logout')
