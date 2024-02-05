@@ -16,6 +16,8 @@ from views_planilha import *
 
 from views_user import *
 
+from views import *
+
 
 if __name__ == '__main__':
     app.run(debug=True)

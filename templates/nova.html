@@ -1,17 +1,15 @@
 {% extends "template.html" %}
 {% block conteudo %}
-      <form class="formularioPlanilha" action="{{ url_for('criar') }}" method="post" enctype="multipart/form-data">
-        <figure class="img-thumbnail col-md-4 formularioImagem">
-          <img class="img-fluid" src="{{ url_for('imagem', nome_arquivo='capa_padrao.jpg') }}">
-          <figcaption>
-            <label class="fileContainer">
-              Mudar Capa
-              <input type="file" name="arquivo" accept=".jpg">
-            </label>
-          </figcaption>
-        </figure>
+      <form class="formularioPlanilha" action="{{ url_for('upload_planilha') }}" method="post" enctype="multipart/form-data">
         <fieldset>
             {{ form.csrf_token() }}
+          <div class="form-group inputBox">
+            <label class="fileContainer">
+              Mudar Planilha
+            </label>
+            <input type="file" name="arquivo" accept=".xlsx">
+
+          </div>
           <div class="form-group inputBox">
              {{ form.nome.label(class="form-label") }}
              {{ form.nome(class="form-control") }}

@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, session, flash, url_for, send_from_directory
 from main import app, db
-from models import Planilhas, Usuarios
-from helpers import recupera_imagem, deleta_arquivo, FormularioPlanilha, FormularioUsuario
+from models import Planilhas
+from helpers import recupera_imagem, deleta_arquivo, FormularioPlanilha
 import time
 
 
@@ -24,27 +24,37 @@ def criar():
     if not form.validate_on_submit():
         return redirect(url_for('novo'))
 
-    nome = form.nome.data
-    categoria = form.categoria.data
-    console = form.console.data
+    try:
+        nome = form.nome.data
+        categoria = form.categoria.data
+        console = form.console.data
 
-    planilha = Planilhas.query.filter_by(nome=nome).first()
+        planilha = Planilhas.query.filter_by(nome=nome).first()
 
-    if planilha:
-        flash('Planilha já existente!')
+        if planilha:
+            flash('Planilha já existente!')
+            return redirect(url_for('index'))
+
+        nova_planilha = Planilhas(nome=nome, categoria=categoria, console=console)
+        db.session.add(nova_planilha)
+        db.session.commit()
+
+        arquivo = request.files['arquivo']
+        upload_path = app.config['UPLOAD_PATH']
+        timestamp = time.time()
+        arquivo.save(f'{upload_path}/capa{nova_planilha.id}-{timestamp}.jpg')
+
         return redirect(url_for('index'))
 
-    nova_planilha = Planilhas(nome=nome, categoria=categoria, console=console)
-    db.session.add(nova_planilha)
-    db.session.commit()
+    except Exception as e:
+        # Em caso de erro, realiza rollback da transação
+        db.session.rollback()
+        flash(f'Erro durante a criação da planilha: {str(e)}')
+        return redirect(url_for('novo'))
 
-    arquivo = request.files['arquivo']
-    upload_path = app.config['UPLOAD_PATH']
-    timestamp = time.time()
-    arquivo.save(f'{upload_path}/capa{nova_planilha.id}-{timestamp}.jpg')
-
-    return redirect(url_for('index'))
-
+    finally:
+        # Finaliza a transação
+        db.session.close()
 @app.route('/editar/<int:id>')
 def editar(id):
     if 'usuario_logado' not in session or session['usuario_logado'] is None:
