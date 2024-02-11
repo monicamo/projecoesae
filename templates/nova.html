@@ -1,31 +1,31 @@
 {% extends "template.html" %}
 {% block conteudo %}
-      <form class="formularioPlanilha" action="{{ url_for('upload_planilha') }}" method="post" enctype="multipart/form-data">
-        <fieldset>
-            {{ form.csrf_token() }}
-          <div class="form-group inputBox">
-            <label class="fileContainer">
-              Mudar Planilha
-            </label>
-            <input type="file" name="arquivo" accept=".xlsx">
+  <form class="formularioPlanilha" action="{{ url_for('upload_planilha_mongo') }}" method="post" enctype="multipart/form-data">
+    <fieldset>
+        {{ form.csrf_token() }}
+      <div class="form-group inputBox">
+        <label class="fileContainer">
+          Mudar Planilha
+        </label>
+        <input type="file" name="arquivo" accept=".xlsx">
 
-          </div>
-          <div class="form-group inputBox">
-             {{ form.nome.label(class="form-label") }}
-             {{ form.nome(class="form-control") }}
-          </div>
-          <div class="form-group inputBox">
-             {{ form.categoria.label(class="form-label") }}
-             {{ form.categoria(class="form-control") }}
-          </div>
-          <div class="form-group inputBox">
-              {{ form.console.label(class="form-label") }}
-              {{ form.console(class="form-control") }}
-          </div>
-           <div class="form-group buttons">
-             {{ form.salvar(class="btn btn-primary") }}
-               <a class="btn btn-danger" href="{{ url_for('index') }}">Voltar</a>
-           </div>
-        </fieldset>
-      </form>
+      </div>
+      <div class="form-group inputBox">
+         {{ form.nome.label(class="form-label") }}
+         {{ form.nome(class="form-control") }}
+      </div>
+      <div class="form-group inputBox">
+         {{ form.categoria.label(class="form-label") }}
+         {{ form.categoria(class="form-control") }}
+      </div>
+      <div class="form-group inputBox">
+          {{ form.console.label(class="form-label") }}
+          {{ form.console(class="form-control") }}
+      </div>
+       <div class="form-group buttons">
+         {{ form.salvar(class="btn btn-primary") }}
+           <a class="btn btn-danger" href="{{ url_for('index') }}">Voltar</a>
+       </div>
+    </fieldset>
+  </form>
 {% endblock %}

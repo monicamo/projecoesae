@@ -31,6 +31,7 @@ TABLES['Planilhas'] = ('''
       `nome` varchar(50) NOT NULL,
       `categoria` varchar(40) NOT NULL,
       `console` varchar(20) NOT NULL,
+      `arquivo` varchar(150) NOT NULL,
       PRIMARY KEY (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;''')
 
@@ -70,14 +71,14 @@ for user in cursor.fetchall():
     print(user[1])
 
 # inserindo planilhas
-planilhas_sql = 'INSERT INTO planilhas (nome, categoria, console) VALUES (%s, %s, %s)'
+planilhas_sql = 'INSERT INTO planilhas (nome, categoria, console, arquivo) VALUES (%s, %s, %s, %s)'
 planilhas = [
-      ('Tetris', 'Puzzle', 'Atari'),
-      ('God of War', 'Hack n Slash', 'PS2'),
-      ('Mortal Kombat', 'Luta', 'PS2'),
-      ('Valorant', 'FPS', 'PC'),
-      ('Crash Bandicoot', 'Hack n Slash', 'PS2'),
-      ('Need for Speed', 'Corrida', 'PS2'),
+      ('Tetris', 'Puzzle', 'Atari', 'path1'),
+      ('God of War', 'Hack n Slash', 'PS2', 'path1'),
+      ('Mortal Kombat', 'Luta', 'PS2', 'path1'),
+      ('Valorant', 'FPS', 'PC', 'path1'),
+      ('Crash Bandicoot', 'Hack n Slash', 'PS2', 'path1'),
+      ('Need for Speed', 'Corrida', 'PS2', 'path1')
 ]
 cursor.executemany(planilhas_sql, planilhas)
 

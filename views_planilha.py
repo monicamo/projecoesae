@@ -10,12 +10,14 @@ def index():
     lista = Planilhas.query.order_by(Planilhas.id)
     return render_template('lista.html', titulo='Planilhas', planilhas=lista)
 
+
 @app.route('/novo')
 def novo():
     if 'usuario_logado' not in session or session['usuario_logado'] is None:
         return redirect(url_for('login', proxima=url_for('novo')))
     form = FormularioPlanilha()
     return render_template('novo.html', titulo='Nova Planilha', form=form)
+
 
 @app.route('/criar', methods=['POST',])
 def criar():
@@ -55,6 +57,8 @@ def criar():
     finally:
         # Finaliza a transação
         db.session.close()
+
+
 @app.route('/editar/<int:id>')
 def editar(id):
     if 'usuario_logado' not in session or session['usuario_logado'] is None:
@@ -89,6 +93,7 @@ def atualizar():
         arquivo.save(f'{upload_path}/capa{planilha.id}-{timestamp}.jpg')
 
     return redirect(url_for('index'))
+
 
 @app.route('/deletar/<int:id>')
 def deletar(id):

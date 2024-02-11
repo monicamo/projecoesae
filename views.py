@@ -4,26 +4,10 @@ from models import Planilhas
 from main import app, db
 import time
 import os
-import pandas as pd
 from pymongo import MongoClient
+from werkzeug.utils import secure_filename
 
-# Classe para manipulação de planilhas
-class ManipuladorPlanilha:
-    def __init__(self, app):
-        self.app = app
-
-    def salvar_planilha(self, arquivo, nova_planilha):
-        timestamp = time.time()
-        caminho_arquivo = self._gerar_caminho_arquivo(nova_planilha, timestamp)
-        arquivo.save(caminho_arquivo)
-        return caminho_arquivo
-
-    def ler_planilha(self, caminho_arquivo):
-        return pd.read_excel(caminho_arquivo, engine='openpyxl')
-
-    def _gerar_caminho_arquivo(self, nova_planilha, timestamp):
-        nome_arquivo = f'excel{nova_planilha.id}-{timestamp}.xlsx'
-        return os.path.join(self.app.config['UPLOAD_EXCEL_PATH'], nome_arquivo)
+ALLOWED_EXTENSIONS = {'xlsx'}
 
 
 @app.route('/nova')
@@ -46,6 +30,7 @@ def upload_planilha():
     nome = form.nome.data
     categoria = form.categoria.data
     console = form.console.data
+    arquivo = request.files['arquivo']
 
     planilha = Planilhas.query.filter_by(nome=nome).first()
 
@@ -57,19 +42,18 @@ def upload_planilha():
     db.session.add(nova_planilha)
     db.session.commit()
 
-    arquivo = request.files['arquivo']
-#    upload_path = app.config['UPLOAD_EXCEL_PATH']
-#    timestamp = time.time()
-#    arquivo.save(f'{upload_path}/excel{nova_planilha.id}-{timestamp}.xlsx')
+    upload_path = app.config['UPLOAD_EXCEL_PATH']
+    timestamp = time.time()
+    arquivo.save(f'{upload_path}/excel{nova_planilha.id}-{timestamp}.xlsx')
 
     manipulador_planilha = ManipuladorPlanilha(app)
     caminho_arquivo = manipulador_planilha.salvar_planilha(arquivo, nova_planilha)
 
     # Agora você pode ler a planilha se necessário
     dados_planilha = manipulador_planilha.ler_planilha(caminho_arquivo)
-    client = MongoClient('localhost', 27017)  # Assuming MongoDB is running on the default port
-    dbmg = client['planilhas']  # Replace 'your_database_name' with your actual database name
-    collection = dbmg['travelex']  # Replace 'your_collection_name' with your actual collection name
+    client = MongoClient('localhost', 27017)
+    dbmg = client['planilhas']
+    collection = dbmg['ativos']  #
 
     # Assuming dados_planilha is your DataFrame
     for index, row in dados_planilha.iterrows():
@@ -143,3 +127,83 @@ def upload_planilha():
     client.close()
 
     return redirect(url_for('index'))
+
+
+@app.route('/upload_planilha_mongo', methods=['POST',])
+def upload_planilha_mongo():
+    form = FormularioPlanilha(request.form)
+
+    if not form.validate_on_submit():
+        return redirect(url_for('nova'))
+
+    nome = form.nome.data
+    categoria = form.categoria.data
+    console = form.console.data
+
+    # Verifica se um arquivo foi enviado
+    if 'arquivo' not in request.files:
+        flash('Nenhum arquivo enviado')
+        return redirect(request.url)
+
+    arquivo = request.files['arquivo']
+
+    # Verifica se o nome do arquivo está vazio
+    if arquivo.filename == '':
+        flash('Nenhum arquivo selecionado')
+        return redirect(request.url)
+
+    # Verifica se o arquivo tem uma extensão permitida
+    if arquivo and allowed_file(arquivo.filename):
+        # Salva o arquivo no sistema de arquivos
+        filename = secure_filename(arquivo.filename)
+        arquivo.save(os.path.join(app.config['UPLOAD_EXCEL_PATH'], filename))
+
+    try:
+        # Inicia uma transação no banco de dados
+        db.session.begin()
+
+        # Verifica se a planilha já existe
+        planilha_existente = Planilhas.query.filter_by(nome=nome).first()
+        if planilha_existente:
+            flash('Planilha já existente!')
+            return redirect(url_for('nova'))
+
+        # Cria uma nova instância de Planilhas
+        nova_planilha = Planilhas(nome=nome, categoria=categoria, console=console, arquivo=filename)
+        db.session.add(nova_planilha)
+        db.session.commit()  # Commit da transação bem-sucedida
+
+        # Lógica de processamento específica para cada tipo de planilha
+        informacoes_processadas = nova_planilha.processar_planilha()
+
+
+        client = MongoClient('localhost', 27017)
+        dbmg = client['planilhas']
+        colecao_ativos = dbmg['ativos']
+
+        print(informacoes_processadas)
+
+        colecao_ativos.insert_many(informacoes_processadas)
+
+        flash('Planilha processada com sucesso!')
+        return redirect(url_for('index'))
+
+    except Exception as e:
+        # Em caso de erro, realiza rollback da transação
+        db.session.rollback()
+        flash(f'Erro durante o upload da planilha: {str(e)}')
+        return redirect(url_for('index'))
+
+    finally:
+        # Finaliza a transação
+        db.session.close()
+
+    # Close the MongoDB connection
+    client.close()
+
+    return redirect(url_for('index'))
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
