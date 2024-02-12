@@ -1,6 +1,6 @@
 from flask import render_template, redirect, session, url_for, request, flash
 from helpers import FormularioPlanilha
-from models import Planilhas
+from models import Planilhas, Ativo
 from main import app, db
 import time
 import os
@@ -8,6 +8,40 @@ from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'xlsx'}
+
+
+@app.route('/gerar_noticia/<ativo_id>')
+def gerar_noticia(ativo_id):
+    ativo = Ativo.get_ativo_by_id(ativo_id)
+
+    client = MongoClient('localhost', 27017)
+    db = client['planilhas']
+    collection = db['noticias']
+
+    nova_noticia = {
+        "instituicao": ativo.instituicao,
+        "codigo": ativo.codigo,
+        "periodo": ativo.periodo,
+        "valor": ativo.valor,
+        "descricao": ativo.descricao,
+        "data_insercao": ativo.data_insercao,
+        "hora_insercao": ativo.hora_insercao
+    }
+    collection.insert_one(nova_noticia)
+    client.close()
+
+    return render_template('noticia.html', ativo=ativo)
+
+
+@app.route('/listar-ativos')
+def listar_ativos():
+    client = MongoClient('localhost', 27017)
+    db = client['planilhas']
+    colecao_ativos = db['ativos']
+
+    ativos = colecao_ativos.find()
+
+    return render_template('lista-ativos.html', titulo='Ativos', ativos=ativos)
 
 
 @app.route('/nova')
@@ -129,7 +163,7 @@ def upload_planilha():
     return redirect(url_for('index'))
 
 
-@app.route('/upload_planilha_mongo', methods=['POST',])
+@app.route('/upload_planilha_mongo', methods=['POST'])
 def upload_planilha_mongo():
     form = FormularioPlanilha(request.form)
 
@@ -143,14 +177,14 @@ def upload_planilha_mongo():
     # Verifica se um arquivo foi enviado
     if 'arquivo' not in request.files:
         flash('Nenhum arquivo enviado')
-        return redirect(request.url)
+        return redirect(url_for('nova'))
 
     arquivo = request.files['arquivo']
 
     # Verifica se o nome do arquivo está vazio
     if arquivo.filename == '':
         flash('Nenhum arquivo selecionado')
-        return redirect(request.url)
+        return redirect(url_for('nova'))
 
     # Verifica se o arquivo tem uma extensão permitida
     if arquivo and allowed_file(arquivo.filename):
@@ -175,7 +209,6 @@ def upload_planilha_mongo():
 
         # Lógica de processamento específica para cada tipo de planilha
         informacoes_processadas = nova_planilha.processar_planilha()
-
 
         client = MongoClient('localhost', 27017)
         dbmg = client['planilhas']
@@ -207,3 +240,5 @@ def upload_planilha_mongo():
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+

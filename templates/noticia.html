@@ -1,0 +1,13 @@
+{% extends "template.html" %}
+{% block conteudo %}
+    <div class="container">
+        <h1>Notícia sobre {{ ativo.descricao }}</h1>
+        <p>Instituição: {{ ativo.instituicao }}</p>
+        <p>Código: {{ ativo.codigo }}</p>
+        <p>Valor: {{ ativo.valor }}</p>
+        <p>Período: {{ ativo.periodo }}</p>
+    </div>
+    <p>
+        "Serviços bancários na {{ ativo.instituicao }} registram aumento de {{ ativo.valor }}% em {{ ativo.descricao }}, consolidando tendência ascendente."
+    </p>
+{% endblock %}

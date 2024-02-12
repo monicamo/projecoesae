@@ -4,26 +4,27 @@
     <a class="btn btn-danger" href="{{ url_for('logout') }}">Logout</a>
     <a class="btn btn-primary" href="{{ url_for('novo') }}">Novo</a>
     <a class="btn btn-primary" href="{{ url_for('nova') }}">Nova Planilha</a>
-    <a class="btn btn-primary" href="{{ url_for('listar_ativos') }}">Lista Ativos</a>
 
     <table class="table table-striped table-responsive table-bordered">
         <thead>
             <tr>
-                <th>Nome</th>
-                <th>Categoria</th>
-                <th>Console</th>
-                <th></th>
-                <th></th>
+                <th>Instituição</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>News</th>
             </tr>
         </thead>
         <tbody>
-        {% for planilha in planilhas %}
+        {% for ativo in ativos %}
         <tr>
-            <td>{{ planilha.nome }}</td>
-            <td>{{ planilha.categoria }}</td>
-            <td>{{ planilha.console }}</td>
-            <td><a href="{{ url_for('editar', id=planilha.id) }}">Editar</a></td>
-            <td><a href="{{ url_for('deletar', id=planilha.id) }}">Deletar</a></td>
+            <td>{{ ativo.instituicao }}</td>
+            <td>{{ ativo.codigo }}</td>
+            <td>{{ ativo.descricao }}</td>
+            <td>{{ ativo.tipo }}</td>
+            <td>{{ ativo.valor }}</td>
+            <td><a class="btn btn-sm btn-primary" href="{{ url_for('gerar_noticia', ativo_id=ativo._id) }}">News</a></td>
         </tr>
         {% endfor %}
         </tbody>

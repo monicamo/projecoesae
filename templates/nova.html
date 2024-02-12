@@ -4,12 +4,11 @@
     <fieldset>
         {{ form.csrf_token() }}
       <div class="form-group inputBox">
-        <label class="fileContainer">
-          Mudar Planilha
-        </label>
-        <input type="file" name="arquivo" accept=".xlsx">
-
-      </div>
+            <span>Browse Planilha</span>
+            <input type="file" name="arquivo" id="arquivo"
+                    accept=".xlsx,.csv,application/vnd.google-apps.spreadsheet"
+                   data-rule-filesize="100" data-target="arquivo" data-error="#err-file-5">
+        </div>
       <div class="form-group inputBox">
          {{ form.nome.label(class="form-label") }}
          {{ form.nome(class="form-control") }}

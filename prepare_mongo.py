@@ -14,6 +14,8 @@ def preparar_dados_iniciais():
     # Coleção de instituições
     collection_instituicoes = db['instituicoes']
 
+    collection_instituicoes.delete_many({});
+
     # Inserir dados iniciais de instituições (exemplo)
     instituicoes_iniciais = [
         {'nome': 'C6 Bank', 'codigo': 'C6'},
@@ -51,36 +53,28 @@ def preparar_dados_iniciais():
 
     collection_instituicoes.insert_many(instituicoes_iniciais)
 
-    # Coleção de planilhas
-    collection_planilhas = db['planilhas']
+
+
+    # Coleção de servicos
+    collection_servicos = db['planilhas']
+
+    collection_servicos.delete_many({});
 
     # Inserir dados iniciais de planilhas (exemplo)
-    planilhas_iniciais = [
+    servicos_iniciais = [
         {
-            'nome': 'Planilha1',
-            'instituicao': 'C6',
+            'nome': 'Servicos',
             'tipo': 'Servicos',
-            'periodo_mensal': criar_intervalo('2023-08-01', '2023-09-30'),
-            'periodo_12meses': criar_intervalo('2022-09-01', '2023-09-30'),
-            'periodo_anual': criar_intervalo('2023-01-01', '2023-12-31'),
-            'valor_mensal': -0.4,
-            'horario': '12h00',
-            'data': '12/12/23',
+            'codigo': 'SV'
         },
         {
-            'nome': 'Planilha2',
-            'instituicao': 'I1',
-            'tipo': 'OutroTipo',
-            'periodo_mensal': criar_intervalo('2023-08-01', '2023-09-30'),
-            'periodo_12meses': criar_intervalo('2022-09-01', '2023-09-30'),
-            'periodo_anual': criar_intervalo('2023-01-01', '2023-12-31'),
-            'valor_mensal': 0.5,
-            'horario': '14h30',
-            'data': '15/12/23',
-        },
+            'nome': 'IGPD',
+            'tipo': 'IGPD',
+            'codigo': 'IG'
+    },
         # Adicione mais planilhas conforme necessário
     ]
-    collection_planilhas.insert_many(planilhas_iniciais)
+    collection_servicos.insert_many(servicos_iniciais)
 
     # Fechar a conexão com o MongoDB
     client.close()
